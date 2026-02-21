@@ -1,0 +1,41 @@
+name: CI with Snyk
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Install Snyk
+        run: npm install -g snyk
+
+      # Scan but do NOT fail build
+      - name: Run Snyk test
+        run: snyk test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      # Send results to Snyk UI
+      - name: Send results to Snyk dashboard
+        run: snyk monitor
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
