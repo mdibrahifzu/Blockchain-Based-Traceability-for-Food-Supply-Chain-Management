@@ -18,16 +18,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      # 2️⃣ Setup Java (adjust version if needed)
-      - name: Set up JDK 17
+      # 2️⃣ Setup Java 8 (as your pom.xml uses Java 8 target)
+      - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '8'
           distribution: 'temurin'
 
-      # 3️⃣ Build project while skipping Spotless formatting
+      # 3️⃣ Build Maven project (skip Spotless formatting)
       - name: Build project (skip Spotless)
-        run: mvn clean install -Dspotless.skip
+        run: mvn clean install -Dspotless.skip -B
 
       # 4️⃣ Install Snyk CLI
       - name: Install Snyk CLI
