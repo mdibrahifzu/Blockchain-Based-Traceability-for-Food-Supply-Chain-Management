@@ -1,37 +1,46 @@
-name: CI with Snyk
+name: Snyk Maven Scan
 
+# Trigger on any push or PR
 on:
   push:
-    branches:
-      - "**"
+    branches: ["**"]
   pull_request:
-    branches:
-      - "**"
+    branches: ["**"]
 
 jobs:
   snyk-scan:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout your repo
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Set up JDK 8
+      # 2️⃣ Set up Java (needed for Maven)
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '8'
+          java-version: '17'
           distribution: 'temurin'
 
-      - name: Run Snyk Maven scan
-        uses: snyk/actions/maven@master
+      # 3️⃣ Install Maven dependencies (so Snyk can read them)
+      - name: Install Maven dependencies
+        run: mvn dependency:resolve -B
+
+      # 4️⃣ Set up Snyk CLI
+      - name: Setup Snyk CLI
+        uses: snyk/actions/setup@master
         with:
-          args: --all-projects
+          version: 'latest'
+
+      # 5️⃣ Run Snyk test on pom.xml
+      - name: Run Snyk test
+        run: snyk test --file=pom.xml
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
+      # 6️⃣ Monitor in Snyk dashboard
       - name: Monitor in Snyk dashboard
-        uses: snyk/actions/maven@master
-        with:
-          args: monitor --all-projects
+        run: snyk monitor --file=pom.xml
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
